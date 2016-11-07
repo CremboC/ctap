@@ -1,5 +1,3 @@
-import scala.collection
-import scala.collection.mutable
 import scala.io.Source
 
 /**
@@ -65,7 +63,6 @@ object Main extends App {
     val taps = Seq(1, 10)
     crack(11, taps)
   }
-
   //  lsfr2()
 
   val b = List(0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1)
@@ -111,5 +108,5 @@ object Main extends App {
     }
   }
 
-  lsfr1()
+//  lsfr1()
 }
