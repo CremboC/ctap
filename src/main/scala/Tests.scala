@@ -2,11 +2,11 @@
   * @author paulius
   */
 object Tests {
-  import LSFRCracker.ExtendedInt
-  import LSFRCracker.ExtendBool
-  import LSFRCracker.R1
-  import LSFRCracker.R2
-  import LSFRCracker.R3
+  import Main.ExtendedInt
+  import Main.ExtendBool
+  import Main.R1
+  import Main.R2
+  import Main.R3
 
   def test0(): Unit = {
     val lsfr = new LSFR(initialState = 44.toBinarySeq(R1.size), taps = R1.taps)
