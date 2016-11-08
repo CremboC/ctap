@@ -1,5 +1,7 @@
+package problem1
+
 /**
-  * Represents an LSFR
+  * Represents an problem1.LSFR
   * @param initialState starting state
   * @param taps indices of bits that will be XOR'd to produce the next left-most bit
   */
@@ -11,7 +13,7 @@ class LSFR(private val initialState: Seq[Int],
   private var state: Seq[Int] = initialState
 
   /**
-    * Shift the LSFR once
+    * Shift the problem1.LSFR once
     * @return the produced left-most bit and the next state
     */
   def shift(): State = {

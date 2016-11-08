@@ -1,12 +1,12 @@
+package problem1
+
 /**
   * @author paulius
   */
 object Tests {
-  import Main.ExtendedInt
-  import Main.ExtendBool
-  import Main.R1
-  import Main.R2
-  import Main.R3
+  import helpers.Helpers.ExtendedInt
+  import helpers.Helpers.ExtendedBool
+  import Main.{R1, R2, R3}
 
   def test0(): Unit = {
     val lsfr = new LSFR(initialState = 44.toBinarySeq(R1.size), taps = R1.taps)

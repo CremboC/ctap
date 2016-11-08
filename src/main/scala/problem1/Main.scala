@@ -1,10 +1,14 @@
+package problem1
+
 import scala.annotation.tailrec
 import scala.io.Source
-import Helpers.ExtendedBool
-import Helpers.ExtendedInt
 
-
+/**
+  * @author paulius
+  */
 object Main {
+  import helpers.Helpers.ExtendedBool
+  import helpers.Helpers.ExtendedInt
 
   case class Register(size: Int, taps: Seq[Int])
 
@@ -40,7 +44,6 @@ object Main {
     val r1cracker = new LSFRCracker(lsfrSize = R1.size, taps = R1.taps, stream = testStream, iterations = iterations)
     val r1result = r1cracker.crack().get
     println(s"R1 key: ${r1result._2.toBinarySeq(R1.size).mkString("")} (${r1result._2})")
-
 
     /**
       * Next block of code gets the LSFR2 key

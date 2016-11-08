@@ -1,3 +1,5 @@
+package helpers
+
 /**
   * @author paulius
   */
@@ -19,6 +21,10 @@ object Helpers {
       case 1 => true
       case _ => throw new IllegalStateException(s"Tried to convert a non-binary number to a boolean (integer must be 0 or 1, got $i)")
     }
+  }
+
+  implicit class ExtendedSeq(s: Seq[Int]) {
+    def toInt: Int = Integer.parseInt(s.mkString(""), 2)
   }
 
   implicit class ExtendedBool(b: Boolean) {
