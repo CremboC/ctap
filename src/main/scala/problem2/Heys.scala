@@ -17,22 +17,28 @@ class Heys(val size: Int, val sBox: SBox, val permBox: PermutationBox) {
     binaryKey.zip(binaryInput).map(x => x._1 ^ x._2).toInt
   }
 
-  /**
-    * A single iteration of the Heys cipher
-    * @return mixed, substituted and permuted intermediate value
-    */
-  def iteration(input: Int, subkey: Int): Int = {
-    val postMix = subkeyMix(input, subkey).toBinarySeq(size)
-
-    val result1 = sBox.substitute(postMix.view(0, 4).toInt)
-    val result2 = sBox.substitute(postMix.view(4, 8).toInt)
-    val result3 = sBox.substitute(postMix.view(8, 12).toInt)
-    val result4 = sBox.substitute(postMix.view(12, 16).toInt)
+  def iteration(input: Int): Int = {
+    val binarySeq = input.toBinarySeq(size)
+    val result1 = sBox.substitute(binarySeq.view(0, 4).toInt)
+    val result2 = sBox.substitute(binarySeq.view(4, 8).toInt)
+    val result3 = sBox.substitute(binarySeq.view(8, 12).toInt)
+    val result4 = sBox.substitute(binarySeq.view(12, 16).toInt)
 
     val output = result1.toBinarySeq(4) ++ result2.toBinarySeq(4) ++ result3.toBinarySeq(4) ++ result4.toBinarySeq(4)
 
     permBox.permute(output.toInt)
   }
+
+  /**
+    * A single iteration of the Heys cipher
+    * @return mixed, substituted and permuted intermediate value
+    */
+  def iteration(input: Int, subkey: Int): Int = {
+    val postMix = subkeyMix(input, subkey)
+    iteration(postMix)
+  }
+
+  def postRoundEncrypt(input: Int, key: Int): Int = subkeyMix(permBox.permute(input), key)
 
   /**
     * Run the Heys cipher
@@ -53,9 +59,9 @@ class Heys(val size: Int, val sBox: SBox, val permBox: PermutationBox) {
     }
 
     val rounds = keys.size - 1
-    val preMix = permBox.permute(iter(input, 0, rounds)) // permute again
+    val postRounds = iter(input, 0, rounds)
 
-    subkeyMix(preMix, keys.last)
+    postRoundEncrypt(postRounds, keys.last)
   }
 
 }

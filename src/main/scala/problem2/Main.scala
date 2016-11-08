@@ -26,7 +26,20 @@ object Main {
     val sbox = new SBox(sboxValues)
     val permBox = new PermutationBox(permboxValues)
     val heys = new Heys(size, sbox, permBox)
-//
+
+    // P1 xor P2 = 0001 (1)
+    // O1 xor O2 = 1000 (8)
+
+    val p1 = Integer.parseInt("00000001000000", 2)
+    val out1 = heys.iteration(p1)
+    val out2 = heys.iteration(out1)
+    val out3 = heys.iteration(out2)
+    val out4 = heys.iteration(out3)
+
+    println(out4.toBinarySeq(size).mkString(""))
+
+
+
 //    val outputs = (1 to Math.pow(2, size).toInt).map { heys.run(_, keys) }
 //
 //    val xoredPairs = for (
