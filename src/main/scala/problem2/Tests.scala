@@ -1,6 +1,6 @@
 package problem2
 
-import problem2.Main.permboxValues
+import problem2.Main.{keys, permboxValues}
 
 /**
   * @author paulius
@@ -244,13 +244,6 @@ object Tests {
     val size = 16
     val sbox = new SBox(sboxValues)
     val permBox = new PermutationBox(permboxValues)
-
-    val subkey1 = 4132
-    val subkey2 = 8165
-    val subkey3 = 14287
-    val subkey4 = 54321
-    val subkey5 = 53124
-    val keys = Seq(subkey1, subkey2, subkey3, subkey4, subkey5)
 
     val plaintext1 = 12033
     val plaintext2 = 62153
