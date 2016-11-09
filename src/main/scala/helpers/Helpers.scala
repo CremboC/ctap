@@ -21,10 +21,20 @@ object Helpers {
       case 1 => true
       case _ => throw new IllegalStateException(s"Tried to convert a non-binary number to a boolean (integer must be 0 or 1, got $i)")
     }
+
+    def **(pow: Int): Int = Math.pow(i, pow).toInt
+  }
+
+  implicit class StringToNumber(s: String) {
+    def bin: Int = Integer.parseInt(s, 2)
   }
 
   implicit class ExtendedSeq(s: Seq[Int]) {
     def toInt: Int = Integer.parseInt(s.mkString(""), 2)
+
+    def binaryDifferenceTo(b: Seq[Int]): Seq[Int] = {
+      s.zip(b).map(x => x._1 ^ x._2)
+    }
   }
 
   implicit class ExtendedBool(b: Boolean) {

@@ -2,9 +2,8 @@ package problem2
 
 import scala.annotation.tailrec
 
-class Heys(val size: Int, val sBox: SBox, val permBox: PermutationBox) {
-  import helpers.Helpers.ExtendedInt
-  import helpers.Helpers.ExtendedSeq
+class Heys(val size: Int, val sbox: SBox, val permBox: PermutationBox) {
+  import helpers.Helpers.{ExtendedInt, ExtendedSeq, StringToNumber}
 
   /**
     * Subkey mixing
@@ -17,28 +16,47 @@ class Heys(val size: Int, val sBox: SBox, val permBox: PermutationBox) {
     binaryKey.zip(binaryInput).map(x => x._1 ^ x._2).toInt
   }
 
-  def iteration(input: Int): Int = {
+  /**
+    * Substitution stage
+    * @param input
+    * @return
+    */
+  def substitute(input: Int): Int = {
     val binarySeq = input.toBinarySeq(size)
-    val result1 = sBox.substitute(binarySeq.view(0, 4).toInt)
-    val result2 = sBox.substitute(binarySeq.view(4, 8).toInt)
-    val result3 = sBox.substitute(binarySeq.view(8, 12).toInt)
-    val result4 = sBox.substitute(binarySeq.view(12, 16).toInt)
+    val result1 = sbox.substitute(binarySeq.view(0, 4).toInt)
+    val result2 = sbox.substitute(binarySeq.view(4, 8).toInt)
+    val result3 = sbox.substitute(binarySeq.view(8, 12).toInt)
+    val result4 = sbox.substitute(binarySeq.view(12, 16).toInt)
 
     val output = result1.toBinarySeq(4) ++ result2.toBinarySeq(4) ++ result3.toBinarySeq(4) ++ result4.toBinarySeq(4)
-
-    permBox.permute(output.toInt)
+    output.toInt
   }
+
+  /**
+    * Input permute stage
+    * @param input
+    * @return
+    */
+  def permute(input: Int): Int = permBox.permute(input)
+
+  /**
+    * Final stage after all rounds are done
+    * @param input
+    * @param key
+    * @return
+    */
+  def postRoundEncrypt(input: Int, key: Int): Int = subkeyMix(permBox.permute(input), key)
 
   /**
     * A single iteration of the Heys cipher
     * @return mixed, substituted and permuted intermediate value
     */
   def iteration(input: Int, subkey: Int): Int = {
-    val postMix = subkeyMix(input, subkey)
-    iteration(postMix)
+    val mixed = subkeyMix(input, subkey)
+    val substituted = substitute(mixed)
+    val permuted = permute(substituted)
+    permuted
   }
-
-  def postRoundEncrypt(input: Int, key: Int): Int = subkeyMix(permBox.permute(input), key)
 
   /**
     * Run the Heys cipher
