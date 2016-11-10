@@ -3,18 +3,17 @@ package problem2
 import scala.annotation.tailrec
 
 class Heys(val size: Int, val sbox: SBox, val permBox: PermutationBox) {
-  import helpers.Helpers.{ExtendedInt, ExtendedSeq, StringToNumber}
+  import helpers.Helpers.{ExtendedInt, ExtendedSeq}
 
   /**
-    * Subkey mixing
+    * Subkey mixing (XOR)
     * @return mixed subkey
     */
   def subkeyMix(input: Int, subkey: Int): Int = input ^ subkey
 
   /**
     * Substitution stage
-    * @param input
-    * @return
+    * @param input 16 bit input to substitute using the sbox's
     */
   def substitute(input: Int): Int = {
     val binarySeq = input.toBinarySeq(size)
@@ -29,16 +28,12 @@ class Heys(val size: Int, val sbox: SBox, val permBox: PermutationBox) {
 
   /**
     * Input permute stage
-    * @param input
-    * @return
     */
   def permute(input: Int): Int = permBox.permute(input)
 
   /**
     * Final stage after all rounds are done
-    * @param input
-    * @param key
-    * @return
+    * @return permuted and subkey-mixed input
     */
   def postRoundEncrypt(input: Int, key: Int): Int = subkeyMix(permBox.permute(input), key)
 
@@ -61,6 +56,13 @@ class Heys(val size: Int, val sbox: SBox, val permBox: PermutationBox) {
     */
   def run(input: Int, keys: Seq[Int]): Int = {
 
+    /**
+      * tail recursive implementation of the Hey's algorithm
+      * @param in input for the round
+      * @param round current round
+      * @param rounds iterate to this round
+      * @return
+      */
     @tailrec
     def iter(in: Int, round: Int, rounds: Int): Int = {
       if (round == rounds) {

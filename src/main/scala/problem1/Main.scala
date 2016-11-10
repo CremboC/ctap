@@ -3,9 +3,6 @@ package problem1
 import scala.annotation.tailrec
 import scala.io.Source
 
-/**
-  * @author paulius
-  */
 object Main {
   import helpers.Helpers.ExtendedBool
   import helpers.Helpers.ExtendedInt
@@ -19,7 +16,6 @@ object Main {
 
   /**
     * Main starting point
-    * @param args
     */
   def main(args: Array[String]): Unit = {
     // i.

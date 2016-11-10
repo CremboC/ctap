@@ -2,9 +2,6 @@ package problem2
 
 import problem2.Main.{keys, permboxValues}
 
-/**
-  * @author paulius
-  */
 object Tests {
 
   import helpers.Helpers.ExtendedInt

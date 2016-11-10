@@ -1,11 +1,7 @@
 package problem1
 
-/**
-  * @author paulius
-  */
 object Tests {
-  import helpers.Helpers.ExtendedInt
-  import helpers.Helpers.ExtendedBool
+  import helpers.Helpers.{ExtendedBool, ExtendedInt}
   import Main.{R1, R2, R3}
 
   def test0(): Unit = {
