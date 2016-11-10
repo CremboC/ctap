@@ -9,12 +9,7 @@ class Heys(val size: Int, val sbox: SBox, val permBox: PermutationBox) {
     * Subkey mixing
     * @return mixed subkey
     */
-  def subkeyMix(input: Int, subkey: Int): Int = {
-    val binaryKey = subkey.toBinarySeq(size)
-    val binaryInput = input.toBinarySeq(size)
-
-    binaryKey.zip(binaryInput).map(x => x._1 ^ x._2).toInt
-  }
+  def subkeyMix(input: Int, subkey: Int): Int = input ^ subkey
 
   /**
     * Substitution stage

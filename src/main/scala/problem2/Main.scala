@@ -52,6 +52,7 @@ object Main {
     require(sdU.length == size || sdU.length == size + 3, {
       s"deltaU must be of size $size or ${size + 3}"
     })
+    println(s"\nCracking $setNumber with dP = $sdP; dU = $sdU")
 
     def compareToExpected(result: Seq[Int], expected: Seq[Int]): Boolean = {
       result(setNumber) == expected(setNumber)
@@ -74,29 +75,27 @@ object Main {
       key.bin
     }
 
-//    keys.map(_.toBinarySeq(16).grouped(4).map(_.mkString("")).mkString(" "))
-
     (0 until 2 ** 16).par
       .map(p1 => (p1, p1 ^ dP))
-//      .filter(p => p._1 < p._2)
+      //      .filter(p => p._1 < p._2)
       .foreach { case (p1, p2) =>
-        for (key <- keys) {
-          val o1 = givenCiphers(p1)
-          val pdo1 = partialDecrypt(heys.subkeyMix(o1, key))
+      for (key <- keys) {
+        val o1 = givenCiphers(p1)
+        val pdo1 = partialDecrypt(heys.subkeyMix(o1, key))
 
-          val o2 = givenCiphers(p2)
-          val pdo2 = partialDecrypt(heys.subkeyMix(o2, key))
+        val o2 = givenCiphers(p2)
+        val pdo2 = partialDecrypt(heys.subkeyMix(o2, key))
 
-          val diff = pdo1.binaryDifferenceTo(pdo2) // 4. XOR
-          if (compareToExpected(diff, dU)) {
-            acc.get(key) match {
-              case None => acc.put(key, 1)
-              case Some(v) =>
-                acc.put(key, v + 1)
-            }
+        val diff = pdo1.binaryDifferenceTo(pdo2) // 4. XOR
+        if (compareToExpected(diff, dU)) {
+          acc.get(key) match {
+            case None => acc.put(key, 1)
+            case Some(v) =>
+              acc.put(key, v + 1)
           }
         }
       }
+    }
 
     acc
       .map { case (key, value) => (key, value.toDouble / (2 ** 16).toDouble) }
@@ -104,7 +103,7 @@ object Main {
       .sortBy(_._2)
       .foreach { case (key, value) => println(s"$key -> " + "%f".format(value)) }
 
-    acc.maxBy(_._1)._1
+    acc.maxBy(_._2)._1
   }
 
   def main(args: Array[String]): Unit = {
@@ -118,86 +117,45 @@ object Main {
     // ii. cryptanalysis
 
     println("\nCracking 0")
-    val subkey0 = crack("0000 0101 0000 0000", "0110 0000 0000 0000", 0) // crack 1st -- 1101
+    val subkey0Guesses = Seq(
+      crack("0000 1100 0000 0000", "0110 0000 0000 0000", 0), // crack 1st (1101 at 0.088, 1010 at 0.097); 0.005 overall
+      crack("0000 0000 1100 0000", "1000 0000 0000 0000", 0), // crack 1st (1101 at 0.117); 0.0029 overall
+      crack("0000 0000 0101 0000", "0010 0000 0000 0000", 0) // crack 1st (1101 at 0.17); 0.015 overall
+    )
     println("\nCracking 1")
-    val subkey1attempt1 = crack("0000 0000 1101 0000", "0000 1001 0000 0000", 1) // crack 2nd -- 1101
-//    val subkey1attempt2 = crack("0000 0000 1101 0000", "0000 0010 0000 0000", 1) // crack 2nd -- 1101
-//    val subkey1attempt3 = crack("0000 0000 0110 0110", "0000 0001 0000 0000", 1) // crack 2nd -- 1101
-//    val subkey1attempt4 = crack("0000 0000 0000 0110", "0000 0100 0000 0000", 1) // crack 2nd -- 1101
+    val subkey1Guesses = Seq(
+      crack("0000 0000 1101 0000", "0000 1001 0000 0000", 1), // crack 2nd (1101 at 0.082);
+      crack("0000 0000 1101 0000", "0000 0010 0000 0000", 1), // crack 2nd (1101 at 0.125);
+      crack("0000 0000 0110 0110", "0000 0001 0000 0000", 1), // crack 2nd (1101 at 0.102);
+      crack("0000 0000 0000 0110", "0000 0100 0000 0000", 1) // crack 2nd (1101 at 0.092);
+    )
     println("\nCracking 2")
-    val subkey2 = crack("0010 0000 0000 0000", "0000 0000 0100 0000", 2) // crack 3rd -- 1101
+    val subkey2Guesses = Seq(
+      crack("0010 0000 0000 0000", "0000 0000 0100 0000", 2), // crack 3rd (1101 at 0.139); overall ??
+      crack("0000 0000 0010 0000", "0000 0000 0010 0000", 2), // crack 3rd (1101 at 0.151); 0.015 overall
+      crack("0000 0000 0010 0010", "0000 0000 0001 0000", 2), // crack 3rd (1101 at 0.100); 0.0039 overall
+      crack("0000 0010 0000 0010", "0000 0000 1000 0000", 2) // crack 3rd (1101 at 0.094); 0.0078 overall
+    )
     println("\nCracking 3")
-    val subkey3 = crack("0001 0000 0000 0000", "0000 0000 0000 1110", 3) // crack 4th -- 0101
+    val subkey3Guesses = Seq(
+      crack("0000 0000 0001 0000", "0000 0000 0000 0010", 3), // crack 4th (0101 at 0.123); 0.0078 overall
+      crack("0000 0001 0000 0001", "0000 0000 0000 1000", 3) // crack 4th (0101 at 0.107); 0.0078 overall
+    )
+
+    val subkey0BestGuess = subkey0Guesses.max
+    val subkey1BestGuess = subkey1Guesses.max
+    val subkey2BestGuess = subkey2Guesses.max
+    val subkey3BestGuess = subkey3Guesses.max
+
+    println(subkey0BestGuess, subkey1BestGuess, subkey2BestGuess, subkey3BestGuess)
 
     println("\nFinal key:")
-    val finalSubkey = subkey0.toBinarySeq(16).view(0, 4) ++
-      subkey1attempt1.toBinarySeq(16).view(4, 8) ++
-      subkey2.toBinarySeq(16).view(8, 12) ++
-      subkey3.toBinarySeq(16).view(12, 16)
+    val finalSubkey = subkey0BestGuess.toBinarySeq(16).view(0, 4) ++
+      subkey1BestGuess.toBinarySeq(16).view(4, 8) ++
+      subkey2BestGuess.toBinarySeq(16).view(8, 12) ++
+      subkey3BestGuess.toBinarySeq(16).view(12, 16)
 
     println(finalSubkey.grouped(4).map(_.mkString("")).mkString(" "))
 
-
-    //    println(acc)
-
-
-    //    for () yield
-
-    //    val pp = for (
-    //      i <- 0 until 2 ** 4;
-    //      j <- 0 until 2 ** 4
-    //    ) yield {
-    //      s"${i.toBinarySeq(4).mkString("")}0000${i.toBinarySeq(4).mkString("")}0000".bin
-    //    }
-
-
-    //    val ddU = "0000100000000000".grouped(4).map(_.bin).toSeq
-    ////      .bin.toBinarySeq(size).grouped(4).map(_.toInt).toSeq
-    //
-    //    val ddP = "0000110100001101".bin
-    //
-    ////    (0 until 2 ** 16).map(_ ^ ddP)
-    ////    val pp = (0 until 2 ** 16).collect { case x if (x ^ ddP) < x => x ^ ddP}
-    //
-    ////    println(pp)
-    //
-    //    val keys2 = for (
-    //      bits <- 0 until 2 ** 4
-    //    ) yield ("0000" + bits.toBinarySeq(4).mkString("") + "00000000").bin
-    //
-    //    def compareToExpected2(result: Seq[Int], expected: Seq[Int]): Boolean = {
-    //      result(1) == expected(1)
-    //    }
-    //
-    //    (0 until 2 ** 16).par.foreach { p1 =>
-    //      val p2 = p1 ^ dP
-    //
-    //      for (key <- keys2) {
-    //        val o1 = givenCiphers(p1)
-    //        val pdo1 = partialDecrypt(heys.subkeyMix(o1, key))
-    //
-    //        val o2 = givenCiphers(p2)
-    //        val pdo2 = partialDecrypt(heys.subkeyMix(o2, key))
-    //
-    //        val diff = pdo1.binaryDifferenceTo(pdo2) // 4. XOR
-    //        if (compareToExpected2(diff, ddU)) {
-    //          acc.get(key) match {
-    //            case None => acc.put(key, 1)
-    //            case Some(v) =>
-    //              acc.put(key, v + 1)
-    //          }
-    //        }
-    //      }
-    //
-    //      plaintextTests += 1
-    //      if (plaintextTests % 100 == 0) {
-    //        println(plaintextTests.toDouble / (2 ** 16).toDouble)
-    //      }
-    //    }
-    //
-    //    println(acc)
-
-
-    //    val p = for (i <- 0 until 2 ** 12) yield s"0000${i.toBinarySeq(12).mkString("")}".bin
   }
 }
