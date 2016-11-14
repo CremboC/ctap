@@ -4,6 +4,7 @@ import scala.annotation.tailrec
 import scala.io.Source
 
 object Main {
+
   import helpers.Helpers.ExtendedBool
   import helpers.Helpers.ExtendedInt
 
@@ -13,6 +14,10 @@ object Main {
   val R1 = Register(7, Seq(5, 6))
   val R2 = Register(11, Seq(8, 10))
   val R3 = Register(13, Seq(7, 10, 11, 12))
+
+  // simplified combining function
+  @inline
+  def combineRegisterBits(a: Int, b: Int, c: Int): Int = 1 ^ a ^ b ^ (b & c)
 
   /**
     * Main starting point
@@ -25,10 +30,10 @@ object Main {
     Tests.test2() // register 3 (LSFR3)
     Tests.test3() // test all together
 
+    println("Tests completed.\n")
+
     // Challenge Vector
     Tests.challengeVector()
-
-    println("Tests completed.\n")
 
     // ii.
     val testStream = Source.fromFile("TestStream.txt").getLines().next().split(" ").map(_.toInt).toSeq
@@ -37,12 +42,9 @@ object Main {
     /**
       * Next block of code gets the LSFR1 key
       */
-//    val r1breaker = new LSFRBreaker(lsfrSize = R1.size, taps = R1.taps, stream = testStream, iterations = iterations)
-//    val r1result = r1breaker.break().get
-//    println(s"R1 key: ${r1result._2.toBinarySeq(R1.size).mkString("")} (${r1result._2})")
-
-    val r1breaker = new LSFRBreaker(lsfrSize = R2.size, taps = R2.taps, stream = testStream, iterations = iterations)
+    val r1breaker = new LSFRBreaker(lsfrSize = R1.size, taps = R1.taps, stream = testStream, iterations = iterations)
     val r1result = r1breaker.break().get
+    println(s"R1 key: ${r1result._2.toBinarySeq(R1.size).mkString("")} (${r1result._2})")
 
     /**
       * Next block of code gets the LSFR2 key
@@ -53,7 +55,7 @@ object Main {
     val r2cracker = new LSFRBreaker(lsfrSize = R2.size, taps = R2.taps, iterations = iterations)
     val r1r2similarity = (1 to 2 ** R2.size).par.map { comb =>
       val outs = r2cracker.simulateLsfr(comb)
-      val xorStream = r1stream.zip(outs).map(i => i._1 ^ i._2)
+      val xorStream = for (i <- r1stream.indices) yield r1stream(i) ^ outs(i)
       (xorStream.zip(testStream).count(x => x._1 == x._2) / iterations.toDouble, comb)
     }
 
@@ -64,45 +66,27 @@ object Main {
     /**
       * Next block of code gets the LSFR3 key
       */
-    // simplified combining function
-    @inline
-    val function = (a: Boolean, b: Boolean, c: Boolean) => {
-      !((b && c) ^ a ^ b)
-    }
+    // cache the initial state of LSFR1 and LSFR2 in order to avoid Int => Seq[Int] conversion
+    // every time we try an LSFR3 combination
+    val lsfr1InitialState = r1result._2.toBinarySeq(R1.size)
+    val lsfr2InitialState = r2result.toBinarySeq(R2.size)
 
-    /**
-      * Tests a key combination and returns the first one that matches the test stream
-      * @param combination initial state (usually 1)
-      * @param max maximum state to check
-      * @return
-      */
-    @tailrec
-    def testCombination(combination: Int, max: Int): Option[Int] = {
-      if (combination == max + 1) {
-        None
-      } else {
-        val lsfr1 = new LSFR(r1result._2.toBinarySeq(R1.size), R1.taps)
-        val lsfr2 = new LSFR(r2result.toBinarySeq(R2.size), R2.taps)
-        val lsfr3 = new LSFR(combination.toBinarySeq(R3.size), R3.taps)
+    // find the first LSFR3 combination that matches the provided output stream
+    val r3result = (1 to 2 ** R3.size).par.find { comb =>
+      // for every combination we will create the three LSFRs in their corresponding state
+      val lsfr1 = new LSFR(lsfr1InitialState, R1.taps)
+      val lsfr2 = new LSFR(lsfr2InitialState, R2.taps)
+      val lsfr3 = new LSFR(comb.toBinarySeq(R3.size), R3.taps)
 
-        val outs = for (_ <- 1 to iterations) yield {
-          val r1shift = lsfr1.shift()
-          val r2shift = lsfr2.shift()
-          val r3shift = lsfr3.shift()
-
-          val out = function(r1shift.out.toBoolean, r2shift.out.toBoolean, r3shift.out.toBoolean).toInt
-          out
-        }
-
-        if (outs == testStream) {
-          Some(combination)
-        } else {
-          testCombination(combination + 1, max)
-        }
+      // and then shift for n amount of iterations, storing everything in a list
+      val outs = for (_ <- 1 to iterations) yield {
+        combineRegisterBits(lsfr1.shift(), lsfr2.shift(), lsfr3.shift())
       }
+
+      // finally we simply do a element-wise comparison
+      outs == testStream
     }
 
-    val r3result = testCombination(1, 2 ** R3.size)
     r3result match {
       case Some(key) => println(s"R3 key: ${key.toBinarySeq(R3.size).mkString("")} ($key)")
       case None => println("R3 key not found.")

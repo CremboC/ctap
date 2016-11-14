@@ -21,7 +21,7 @@ class LSFRBreaker(val lsfrSize: Int,
     */
   def simulateLsfr(state: Int): Seq[Int] = {
     val lsfr = new LSFR(initialState = state.toBinarySeq(lsfrSize), taps = taps)
-    val outs = for (_ <- 1 to iterations) yield lsfr.shift().out
+    val outs = for (_ <- 1 to iterations) yield lsfr.shift()
     outs
   }
 
@@ -30,19 +30,10 @@ class LSFRBreaker(val lsfrSize: Int,
     * @return maybe a tuple of (correlation, combination), if found, else None
     */
   def break(): Option[(Double, Int)] = {
-    val similarities = (1 to 2 ** lsfrSize).map { comb =>
+    val similarities = (1 to 2 ** lsfrSize).par.map { comb =>
       val outs = simulateLsfr(comb)
       (outs.zip(stream).count(x => x._1 == x._2) / iterations.toDouble, comb)
     }
-
-    for (i <- similarities.indices by 2) {
-      val (p, key) = similarities(i)
-      println(s"$p,$key")
-    }
-
-//    similarities.foreach {
-//      case (p, key) => println(s"$p,$key")
-//    }
 
     similarities.find(s => s._1 < 0.30 || s._1 > 0.70)
   }
