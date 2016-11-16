@@ -75,9 +75,8 @@ object Main {
       key.bin
     }
 
-    (0 until 2 ** 16).par
+    (0 until 2 ** 16)
       .map(p1 => (p1, p1 ^ dP))
-      //      .filter(p => p._1 < p._2)
       .foreach { case (p1, p2) =>
       for (key <- keys) {
         val o1 = givenCiphers(p1)
@@ -90,8 +89,7 @@ object Main {
         if (compareToExpected(diff, dU)) {
           acc.get(key) match {
             case None => acc.put(key, 1)
-            case Some(v) =>
-              acc.put(key, v + 1)
+            case Some(v) => acc.put(key, v + 1)
           }
         }
       }
@@ -116,63 +114,65 @@ object Main {
 
     // ii. cryptanalysis
 
+    println(crack("0000 1100 0000 0000", "0110 0000 0000 0000", 0))
+
     println("\nCracking 0")
     val subkey0Guesses = Seq(
-//      crack("0000 1100 0000 0000", "0110 0000 0000 0000", 0), // crack 1st (1101 at 0.088, 1010 at 0.097); 0.0058 overall
-//      crack("0000 0000 1100 0000", "1000 0000 0000 0000", 0), // crack 1st (1101 at 0.117); 0.0029 overall
-//      crack("0000 0000 0010 0000", "0010 0000 0000 0000", 0) // crack 1st (1101 at 0.149); 0.0078 overall
+      crack("0000 1100 0000 0000", "0110 0000 0000 0000", 0), // crack 1st (1101 at 0.088, 1010 at 0.097); 0.0058 overall
+      crack("0000 0000 1100 0000", "1000 0000 0000 0000", 0), // crack 1st (1101 at 0.117); 0.0029 overall
+      crack("0000 0000 0010 0000", "0010 0000 0000 0000", 0) // crack 1st (1101 at 0.149); 0.0078 overall
     )
     println("\nCracking 1")
     val subkey1Guesses = Seq(
-//      crack("0000 0000 1101 0000", "0000 1001 0000 0000", 1), // crack 2nd (1101 at 0.082); 0.0014 overall
-//      crack("0000 0000 1101 0000", "0000 0010 0000 0000", 1), // crack 2nd (1101 at 0.125); 0.00585 overall
-//      crack("0000 0000 0110 0110", "0000 0001 0000 0000", 1), // crack 2nd (1101 at 0.102); 0.0019 overall
-//      crack("0000 0000 0000 0110", "0000 0100 0000 0000", 1) // crack 2nd (1101 at 0.092); 0.0009 overall
+      crack("0000 0000 1101 0000", "0000 1001 0000 0000", 1), // crack 2nd (1101 at 0.082); 0.0014 overall
+      crack("0000 0000 1101 0000", "0000 0010 0000 0000", 1), // crack 2nd (1101 at 0.125); 0.00585 overall
+      crack("0000 0000 0110 0110", "0000 0001 0000 0000", 1), // crack 2nd (1101 at 0.102); 0.0019 overall
+      crack("0000 0000 0000 0110", "0000 0100 0000 0000", 1) // crack 2nd (1101 at 0.092); 0.0009 overall
     )
     println("\nCracking 2")
     val subkey2Guesses = Seq(
-//      crack("0010 0000 0000 0000", "0000 0000 0100 0000", 2), // crack 3rd (1101 at 0.139); 0.0078 overall
-//      crack("0000 0000 0010 0000", "0000 0000 0010 0000", 2), // crack 3rd (1101 at 0.151); 0.0156 overall
-//      crack("0000 0000 0010 0010", "0000 0000 0001 0000", 2), // crack 3rd (1101 at 0.100); 0.0039 overall
-//      crack("0000 0010 0000 0010", "0000 0000 1000 0000", 2) // crack 3rd (1101 at 0.094); 0.00781 overall
+      crack("0010 0000 0000 0000", "0000 0000 0100 0000", 2), // crack 3rd (1101 at 0.139); 0.0078 overall
+      crack("0000 0000 0010 0000", "0000 0000 0010 0000", 2), // crack 3rd (1101 at 0.151); 0.0156 overall
+      crack("0000 0000 0010 0010", "0000 0000 0001 0000", 2), // crack 3rd (1101 at 0.100); 0.0039 overall
+      crack("0000 0010 0000 0010", "0000 0000 1000 0000", 2) // crack 3rd (1101 at 0.094); 0.00781 overall
     )
     println("\nCracking 3")
     val subkey3Guesses = Seq(
-//      crack("0000 0000 0001 0000", "0000 0000 0000 0010", 3), // crack 4th (0101 at 0.123); 0.00781 overall
-//      crack("0000 0001 0000 0001", "0000 0000 0000 1000", 3) // crack 4th (0101 at 0.107); 0.015625 overall
+      crack("0000 0000 0001 0000", "0000 0000 0000 0010", 3), // crack 4th (0101 at 0.123); 0.00781 overall
+      crack("0000 0001 0000 0001", "0000 0000 0000 1000", 3) // crack 4th (0101 at 0.107); 0.015625 overall
     )
 
-//    val rez = Source.fromFile("XORprofile.txt")
-//      .getLines()
-//      .toList
-////      .tail
-//      .map { line =>
-//        val columns = line.split("     ")
-//        columns.mkString(" & ")
-////        columns.tail.map(_.toInt)
-//      }
-//      .mkString(" \\\\\n")
+    val rez = Source.fromFile("XORprofile.txt")
+      .getLines()
+      .toList
+//      .tail
+      .map { line =>
+        val columns = line.split("     ")
+        columns.mkString(" & ")
+//        columns.tail.map(_.toInt)
+      }
+      .mkString(" \\\\\n")
 
-//    println(rez)
+    println(rez)
 
-//    val subkey0BestGuess = subkey0Guesses.max
-//    println(subkey0BestGuess)
-//    val subkey1BestGuess = subkey1Guesses.max
-//    println(subkey1BestGuess)
-//    val subkey2BestGuess = subkey2Guesses.max
-//    println(subkey2BestGuess)
-//    val subkey3BestGuess = subkey3Guesses.max
-//    println(subkey3BestGuess)
+    val subkey0BestGuess = subkey0Guesses.max
+    println(subkey0BestGuess)
+    val subkey1BestGuess = subkey1Guesses.max
+    println(subkey1BestGuess)
+    val subkey2BestGuess = subkey2Guesses.max
+    println(subkey2BestGuess)
+    val subkey3BestGuess = subkey3Guesses.max
+    println(subkey3BestGuess)
 
-//    println(subkey0BestGuess, subkey1BestGuess, subkey2BestGuess, subkey3BestGuess)
+    println(subkey0BestGuess, subkey1BestGuess, subkey2BestGuess, subkey3BestGuess)
 
-//    println("\nFinal key:")
-//    val finalSubkey = subkey0BestGuess.toBinarySeq(16).view(0, 4) ++
-//      subkey1BestGuess.toBinarySeq(16).view(4, 8) ++
-//      subkey2BestGuess.toBinarySeq(16).view(8, 12) ++
-//      subkey3BestGuess.toBinarySeq(16).view(12, 16)
-//
-//    println(finalSubkey.grouped(4).map(_.mkString("")).mkString(" "))
+    println("\nFinal key:")
+    val finalSubkey = subkey0BestGuess.toBinarySeq(16).view(0, 4) ++
+      subkey1BestGuess.toBinarySeq(16).view(4, 8) ++
+      subkey2BestGuess.toBinarySeq(16).view(8, 12) ++
+      subkey3BestGuess.toBinarySeq(16).view(12, 16)
+
+    println(finalSubkey.grouped(4).map(_.mkString("")).mkString(" "))
 
   }
 }
