@@ -1,20 +1,11 @@
-package package1int
-
 import scala.io.Source
 
 object Problem1 extends App {
-
   /**
     * START GLOBAL VARIABLES
     */
-
-
-  // 0th bit is the rightmost
-  // 10101
-  // ^   ^0th
-  // 5th
   case class Register(size: Int, taps: Seq[Int])
-
+  // 0th bit is the rightmost
   val R1 = Register(7, Seq(0, 1))
   val R2 = Register(11, Seq(0, 2))
   val R3 = Register(13, Seq(5, 2, 1, 0))
@@ -98,7 +89,6 @@ object Problem1 extends App {
   @inline
   def combineRegisterBits(a: Int, b: Int, c: Int): Int = 1 ^ a ^ b ^ (b & c)
 
-
   def test1(): Unit = {
     val lsfr = new LSFR(44, R1.taps, R1.size)
     val output = for (_ <- 0 until 25) yield lsfr.shift
@@ -141,7 +131,7 @@ object Problem1 extends App {
     val r2 = new LSFR(616, R3.taps, R3.size)
 
     val outs = for (_ <- 0 until 25) yield {
-      Problem1.combineRegisterBits(r0.shift, r1.shift, r2.shift)
+      combineRegisterBits(r0.shift, r1.shift, r2.shift)
     }
 
     require(outs == "0000101101010100110001101".split("").map(_.toInt).toList, {
@@ -159,7 +149,7 @@ object Problem1 extends App {
     val r2 = new LSFR(6420, R3.taps, R3.size)
 
     val outs = for (_ <- 0 until 25) yield {
-      Problem1.combineRegisterBits(r0.shift, r1.shift, r2.shift)
+      combineRegisterBits(r0.shift, r1.shift, r2.shift)
     }
 
     println(s"Challenge Vector output: ${outs.mkString("")}")
@@ -179,10 +169,8 @@ object Problem1 extends App {
       val bits = for (x <- taps) yield (state >> x) & 1
       val leftMostBit = bits.reduce(_ ^ _)
 
-      // shift onces
-      state >>= 1
-      // and then set the left most bit to the new one
-      state ^= (-leftMostBit ^ state) & (1 << size - 1)
+      // shift and set new left-most bit
+      state = (state >> 1) + (leftMostBit << (size - 1))
 
       lastBit
     }
@@ -195,6 +183,4 @@ object Problem1 extends App {
       String.format("%5s", i.toBinaryString).replace(' ', '0')
     }
   }
-
-
 }

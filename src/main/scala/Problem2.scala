@@ -1,5 +1,3 @@
-package package2int
-
 import scala.collection.mutable
 import scala.io.Source
 
