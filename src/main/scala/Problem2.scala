@@ -1,5 +1,6 @@
 import scala.collection.mutable
 import scala.io.Source
+import scala.util.matching.Regex
 
 object Problem2 extends App {
 
@@ -20,8 +21,8 @@ object Problem2 extends App {
   val subkey5 = 53124
   val subkeys = Seq(subkey1, subkey2, subkey3, subkey4, subkey5)
 
-  val regexp = """([0-9]+)  ([0-9]+)""".r
-  val givenCiphers = Source.fromFile("block.txt").getLines().toSeq.map { s =>
+  val regexp: Regex = """([0-9]+)  ([0-9]+)""".r
+  val givenCiphers: Map[Int, Int] = Source.fromFile("block.txt").getLines().toSeq.map { s =>
     val regexp(plain, cipher) = s
     plain.toInt -> cipher.toInt
   }.toMap
@@ -74,16 +75,16 @@ object Problem2 extends App {
     crack("0000 0001 0000 0001", "0000 0000 0000 1000", 3) // crack 4th (0101 at 0.107); 0.015625 overall
   )
 
-  val subkey0BestGuess = subkey0Guesses.max
+  val subkey0BestGuess: Int = subkey0Guesses.max
   println(s"Partial subkey 0: $subkey0BestGuess")
-  val subkey1BestGuess = subkey1Guesses.max
+  val subkey1BestGuess: Int = subkey1Guesses.max
   println(s"Partial subkey 1: $subkey1BestGuess")
-  val subkey2BestGuess = subkey2Guesses.max
+  val subkey2BestGuess: Int = subkey2Guesses.max
   println(s"Partial subkey 2: $subkey2BestGuess")
-  val subkey3BestGuess = subkey3Guesses.max
+  val subkey3BestGuess: Int = subkey3Guesses.max
   println(s"Partial subkey 3: $subkey3BestGuess")
 
-  val fullKey = subkey0BestGuess + subkey1BestGuess + subkey2BestGuess + subkey3BestGuess
+  val fullKey: Int = subkey0BestGuess + subkey1BestGuess + subkey2BestGuess + subkey3BestGuess
   println(s"Final subkey K5: ${fullKey.paddedInt(16)}")
 
   /**
