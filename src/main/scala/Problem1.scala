@@ -22,19 +22,19 @@ object Problem1 extends App {
   challenge()
 
   // read in the test stream in a nice format
-  val testStream = Source.fromFile("TestStream.txt").getLines().next().split(" ").map(_.toInt).toSeq
+  val testStream: Seq[Int] = Source.fromFile("TestStream.txt").getLines().next().split(" ").map(_.toInt).toSeq
   val iterations = 2000
 
   /**
     * Next block of code gets the LSFR1 key
     */
-  val similarities = (1 to 2 ** R1.size).map { comb =>
+  val similarities: Seq[(Double, Int)] = (1 to 2 ** R1.size).map { comb =>
     val lsfr = new LSFR(comb, R1.taps, R1.size)
     val output = for (_ <- 1 to iterations) yield lsfr.shift()
 
     (output.zip(testStream).count(x => x._1 == x._2) / iterations.toDouble, comb)
   }
-  val r1result = similarities.find(s => s._1 < 0.30 || s._1 > 0.70).map(_._2).get
+  val r1result: Int = similarities.find(s => s._1 < 0.30 || s._1 > 0.70).map(_._2).get
 
   println(s"R1 key: $r1result (${r1result.paddedInt(R1.size)})")
 
@@ -42,25 +42,25 @@ object Problem1 extends App {
     * Next block of code gets the LSFR2 key
     */
   // this will be used to get the LSFR2 key using the x1 XOR x2 method
-  val r1stream = {
+  val r1stream: Seq[Int] = {
     val lsfr = new LSFR(r1result, R1.taps, R1.size)
     for (_ <- 1 to iterations) yield lsfr.shift()
   }
 
-  val r1r2similarity = (1 to 2 ** R2.size).map { comb =>
+  val r1r2similarity: Seq[(Double, Int)] = (1 to 2 ** R2.size).map { comb =>
     val lsfr = new LSFR(comb, R2.taps, R2.size)
     val output = for (_ <- 1 to iterations) yield lsfr.shift()
     val xorStream = for (i <- r1stream.indices) yield r1stream(i) ^ output(i)
     (xorStream.zip(testStream).count(x => x._1 == x._2) / iterations.toDouble, comb)
   }
 
-  val r2result = r1r2similarity.find(x => x._1 > 0.6 || x._1 < 0.4).map(_._2).get
+  val r2result: Int = r1r2similarity.find(x => x._1 > 0.6 || x._1 < 0.4).map(_._2).get
   println(s"R2 key: $r2result (${r2result.paddedInt(R2.size)})")
 
   /**
     * Next block of code gets the LSFR3 key
     */
-  val r3result = (1 to 2 ** R3.size).find { comb =>
+  val r3result: Option[Int] = (1 to 2 ** R3.size).find { comb =>
     // for every combination we will create the three LSFRs in their corresponding state
     val lsfr1 = new LSFR(r1result, R1.taps, R1.size)
     val lsfr2 = new LSFR(r2result, R2.taps, R2.size)
