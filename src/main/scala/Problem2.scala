@@ -1,6 +1,10 @@
 import scala.collection.mutable
 import scala.io.Source
+import scala.util.matching.Regex
 
+/**
+  * Source of
+  */
 object Problem2 extends App {
 
   /**
@@ -8,7 +12,7 @@ object Problem2 extends App {
     */
 
   val sboxValues = Seq(0x4, 0x0, 0xC, 0x3, 0x8, 0xB, 0xA, 0x9, 0xD, 0xE, 0x2, 0x7, 0x6, 0x5, 0xF, 0x1)
-  val inverseValues: Seq[Int] = sboxValues.zipWithIndex.sortBy(_._1).map {
+  val reverseSboxValues: Seq[Int] = sboxValues.zipWithIndex.sortBy(_._1).map {
     case (_, index) => index
   }
   val permboxValues = Seq(1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15, 4, 8, 12, 16)
@@ -20,8 +24,8 @@ object Problem2 extends App {
   val subkey5 = 53124
   val subkeys = Seq(subkey1, subkey2, subkey3, subkey4, subkey5)
 
-  val regexp = """([0-9]+)  ([0-9]+)""".r
-  val givenCiphers = Source.fromFile("block.txt").getLines().toSeq.map { s =>
+  val regexp: Regex = """([0-9]+)  ([0-9]+)""".r
+  val givenCiphers: Map[Int, Int] = Source.fromFile("block.txt").getLines().toSeq.map { s =>
     val regexp(plain, cipher) = s
     plain.toInt -> cipher.toInt
   }.toMap
@@ -50,28 +54,28 @@ object Problem2 extends App {
 
   println("Cracking 0")
   val subkey0Guesses = Seq(
-    crack("0000 1100 0000 0000", "0110 0000 0000 0000", 0), // crack 1st (1101 at 0.088, 1010 at 0.097); 0.0058 overall
-    crack("0000 0000 1100 0000", "1000 0000 0000 0000", 0), // crack 1st (1101 at 0.117); 0.0029 overall
-    crack("0000 0000 0010 0000", "0010 0000 0000 0000", 0) // crack 1st (1101 at 0.149); 0.0078 overall
+    break("0000 1100 0000 0000", "0110 0000 0000 0000", 0), // break 1st (1101 at 0.088, 1010 at 0.097); 0.0058 overall
+    break("0000 0000 1100 0000", "1000 0000 0000 0000", 0), // break 1st (1101 at 0.117); 0.0029 overall
+    break("0000 0000 0010 0000", "0010 0000 0000 0000", 0) // break 1st (1101 at 0.149); 0.0078 overall
   )
   println("Cracking 1")
   val subkey1Guesses = Seq(
-    crack("0000 0000 1101 0000", "0000 1001 0000 0000", 1), // crack 2nd (1101 at 0.082); 0.0014 overall
-    crack("0000 0000 1101 0000", "0000 0010 0000 0000", 1), // crack 2nd (1101 at 0.125); 0.00585 overall
-    crack("0000 0000 0110 0110", "0000 0001 0000 0000", 1), // crack 2nd (1101 at 0.102); 0.0019 overall
-    crack("0000 0000 0000 0110", "0000 0100 0000 0000", 1) // crack 2nd (1101 at 0.092); 0.0009 overall
+    break("0000 0000 1101 0000", "0000 1001 0000 0000", 1), // break 2nd (1101 at 0.082); 0.0014 overall
+    break("0000 0000 1101 0000", "0000 0010 0000 0000", 1), // break 2nd (1101 at 0.125); 0.00585 overall
+    break("0000 0000 0110 0110", "0000 0001 0000 0000", 1), // break 2nd (1101 at 0.102); 0.0019 overall
+    break("0000 0000 0000 0110", "0000 0100 0000 0000", 1) // break 2nd (1101 at 0.092); 0.0009 overall
   )
   println("Cracking 2")
   val subkey2Guesses = Seq(
-    crack("0010 0000 0000 0000", "0000 0000 0100 0000", 2), // crack 3rd (1101 at 0.139); 0.0078 overall
-    crack("0000 0000 0010 0000", "0000 0000 0010 0000", 2), // crack 3rd (1101 at 0.151); 0.0156 overall
-    crack("0000 0000 0010 0010", "0000 0000 0001 0000", 2), // crack 3rd (1101 at 0.100); 0.0039 overall
-    crack("0000 0010 0000 0010", "0000 0000 1000 0000", 2) // crack 3rd (1101 at 0.094); 0.00781 overall
+    break("0010 0000 0000 0000", "0000 0000 0100 0000", 2), // break 3rd (1101 at 0.139); 0.0078 overall
+    break("0000 0000 0010 0000", "0000 0000 0010 0000", 2), // break 3rd (1101 at 0.151); 0.0156 overall
+    break("0000 0000 0010 0010", "0000 0000 0001 0000", 2), // break 3rd (1101 at 0.100); 0.0039 overall
+    break("0000 0010 0000 0010", "0000 0000 1000 0000", 2) // break 3rd (1101 at 0.094); 0.00781 overall
   )
   println("Cracking 3")
   val subkey3Guesses = Seq(
-    crack("0000 0000 0001 0000", "0000 0000 0000 0010", 3), // crack 4th (0101 at 0.123); 0.00781 overall
-    crack("0000 0001 0000 0001", "0000 0000 0000 1000", 3) // crack 4th (0101 at 0.107); 0.015625 overall
+    break("0000 0000 0001 0000", "0000 0000 0000 0010", 3), // break 4th (0101 at 0.123); 0.00781 overall
+    break("0000 0001 0000 0001", "0000 0000 0000 1000", 3) // break 4th (0101 at 0.107); 0.015625 overall
   )
 
   val subkey0BestGuess = subkey0Guesses.max
@@ -94,13 +98,13 @@ object Problem2 extends App {
   def bin(string: String): Int = Integer.parseInt(string.replace(" ", ""), 2)
 
   /**
-    * Attempt to crack some partial subkey
+    * Attempt to break some partial subkey
     * @param sdP delta P
     * @param sdU delta U
     * @param setNumber which partial subkey (0 -- left-most bits)
     * @return best-guess partial subkey
     */
-  def crack(sdP: String, sdU: String, setNumber: Int): Int = {
+  def break(sdP: String, sdU: String, setNumber: Int): Int = {
     val dP = bin(sdP)
     val dU = bin(sdU)
 
@@ -120,15 +124,19 @@ object Problem2 extends App {
       ((result >> shifting) & 0xFF) == ((expected >> shifting) & 0xFF)
     }
 
+    // for every plaintext we find its corresponding pair
+    // then test every possible subkey (as generated earlier)
+    // by running the last round of encryption in reverse
+    // and then comparing it to the expected deltaU
     (0 until 2 ** 16)
       .map(p1 => (p1, p1 ^ dP))
       .foreach { case (p1, p2) =>
         for (key <- keys) {
           val o1 = givenCiphers(p1)
-          val pdo1 = reverseSubstituteWhole(o1 ^ key)
+          val pdo1 = substituteWhole(o1 ^ key, reverseSboxValues)
 
           val o2 = givenCiphers(p2)
-          val pdo2 = reverseSubstituteWhole(o2 ^ key)
+          val pdo2 = substituteWhole(o2 ^ key, reverseSboxValues)
 
           val diff = pdo1 ^ pdo2 // 4. XOR
           if (compareToExpected(diff, dU)) {
@@ -140,13 +148,14 @@ object Problem2 extends App {
         }
       }
 
+    // finally choose the best match
     acc.maxBy(_._2)._1
   }
 
   /**
     * Run Hey's cipher
     * @param input plaintext
-    * @param subkeys subkeys used in different rounds. This determines number of rounds
+    * @param subkeys subkeys used in different rounds. Determines number of rounds
     * @return encrypted text
     */
   def heys(input: Int, subkeys: Seq[Int]): Int = {
@@ -156,13 +165,13 @@ object Problem2 extends App {
     val output = (0 until subkeys.size - 1).foldLeft(input) {
       case (carry, round) =>
         val mixed = carry ^ subkeys(round)
-        val substituted = substituteWhole(mixed)
-        val permuted = permute(substituted)
+        val substituted = substituteWhole(mixed, sboxValues)
+        val permuted = permute(substituted, permboxValues)
         permuted
     }
 
     // and the last stage: final encryption
-    permute(output) ^ subkeys.last
+    permute(output, permboxValues) ^ subkeys.last
   }
 
   /**
@@ -175,12 +184,15 @@ object Problem2 extends App {
     })
   }
 
-  def permute(number: Int): Int = {
-    val numbers = for (i <- permboxValues.indices) yield {
+  /**
+    * Permutation stage of Heys' cipher
+    */
+  def permute(number: Int, boxValues: Seq[Int]): Int = {
+    val numbers = for (i <- boxValues.indices) yield {
       // get the ith bit; 15 - i because the 0th bit is the right-most
       val bit = (number >> 15 - i) & 1
       // and set it's new location; - 1 since the values are 1-indexed
-      (bit, permboxValues(i) - 1)
+      (bit, boxValues(i) - 1)
     }
 
     val permuted = numbers.sortBy(_._2).map(_._1).mkString("")
@@ -191,7 +203,7 @@ object Problem2 extends App {
     * Helper to test the permutation stage of the cipher
     */
   def permuteTest(initial: Int, expected: Int): Unit = {
-    val result = permute(initial)
+    val result = permute(initial, permboxValues)
     require(result == expected, {
       s"$result == $expected"
     })
@@ -200,40 +212,23 @@ object Problem2 extends App {
   /**
     * Substitute the whole 16 bits at once
     */
-  def substituteWhole(number: Int): Int = {
-    def substituteSingle(number: Int): Int = sboxValues(number)
+  def substituteWhole(number: Int, sboxValues: Seq[Int]): Int = {
     val S1 = number >> 12
     val S2 = (number >> 8) & 0xF
     val S3 = (number >> 4) & 0xF
     val S4 = number & 0xF
 
-    (substituteSingle(S1) << 12) +
-      (substituteSingle(S2) << 8) +
-      (substituteSingle(S3) << 4) +
-      substituteSingle(S4)
-  }
-
-  /**
-    * Reverse substitute the whole 16 bits at once
-    */
-  def reverseSubstituteWhole(number: Int): Int = {
-    def reverseSubstitute(number: Int): Int = inverseValues(number)
-    val S1 = number >> 12
-    val S2 = (number >> 8) & 0xF
-    val S3 = (number >> 4) & 0xF
-    val S4 = number & 0xF
-
-    (reverseSubstitute(S1) << 12) +
-      (reverseSubstitute(S2) << 8) +
-      (reverseSubstitute(S3) << 4) +
-      reverseSubstitute(S4)
+    (sboxValues(S1) << 12) +
+      (sboxValues(S2) << 8) +
+      (sboxValues(S3) << 4) +
+      sboxValues(S4)
   }
 
   /**
     * Helper to test the subtitution function
     */
   def substituteWholeTest(initial: Int, expected: Int): Unit = {
-    val result = substituteWhole(initial)
+    val result = substituteWhole(initial, sboxValues)
     require(result == expected, {
       s"$result == $expected"
     })
@@ -246,3 +241,6 @@ object Problem2 extends App {
     }
   }
 }
+/**
+  * [1] Ruten, J. (2016). How do you set, clear and toggle a single bit in C/C++?. [online] Stackoverflow.com. Available at: http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c [Accessed 17 Nov. 2016].
+  */

@@ -30,7 +30,7 @@ object Problem1 extends App {
     */
   val similarities = (1 to 2 ** R1.size).map { comb =>
     val lsfr = new LSFR(comb, R1.taps, R1.size)
-    val output = for (_ <- 1 to iterations) yield lsfr.shift
+    val output = for (_ <- 1 to iterations) yield lsfr.shift()
 
     (output.zip(testStream).count(x => x._1 == x._2) / iterations.toDouble, comb)
   }
@@ -44,12 +44,12 @@ object Problem1 extends App {
   // this will be used to get the LSFR2 key using the x1 XOR x2 method
   val r1stream = {
     val lsfr = new LSFR(r1result, R1.taps, R1.size)
-    for (_ <- 1 to iterations) yield lsfr.shift
+    for (_ <- 1 to iterations) yield lsfr.shift()
   }
 
   val r1r2similarity = (1 to 2 ** R2.size).map { comb =>
     val lsfr = new LSFR(comb, R2.taps, R2.size)
-    val output = for (_ <- 1 to iterations) yield lsfr.shift
+    val output = for (_ <- 1 to iterations) yield lsfr.shift()
     val xorStream = for (i <- r1stream.indices) yield r1stream(i) ^ output(i)
     (xorStream.zip(testStream).count(x => x._1 == x._2) / iterations.toDouble, comb)
   }
@@ -68,7 +68,7 @@ object Problem1 extends App {
 
     // and then shift for n amount of iterations, storing everything in a list
     val outs = for (_ <- 1 to iterations) yield {
-      combineRegisterBits(lsfr1.shift, lsfr2.shift, lsfr3.shift)
+      combineRegisterBits(lsfr1.shift(), lsfr2.shift(), lsfr3.shift())
     }
 
     // finally we simply do a element-wise comparison
@@ -91,7 +91,7 @@ object Problem1 extends App {
 
   def test1(): Unit = {
     val lsfr = new LSFR(44, R1.taps, R1.size)
-    val output = for (_ <- 0 until 25) yield lsfr.shift
+    val output = for (_ <- 0 until 25) yield lsfr.shift()
     require(output == "0011010010111011100110010".split("").map(_.toInt).toList, {
       s"""
          |Failed test 1
@@ -103,7 +103,7 @@ object Problem1 extends App {
 
   def test2(): Unit = {
     val lsfr = new LSFR(555, R2.taps, R2.size)
-    val output = for (_ <- 0 until 25) yield lsfr.shift
+    val output = for (_ <- 0 until 25) yield lsfr.shift()
     require(output == "1101010001010000101000100".split("").map(_.toInt).toList, {
       s"""
          |Failed test 2
@@ -115,7 +115,7 @@ object Problem1 extends App {
 
   def test3(): Unit = {
     val lsfr = new LSFR(616, R3.taps, R3.size)
-    val outs = for (_ <- 0 until 25) yield lsfr.shift
+    val outs = for (_ <- 0 until 25) yield lsfr.shift()
     require(outs == "0001011001000101010110111".split("").map(_.toInt).toList, {
       s"""
          |Failed test 3
@@ -131,7 +131,7 @@ object Problem1 extends App {
     val r2 = new LSFR(616, R3.taps, R3.size)
 
     val outs = for (_ <- 0 until 25) yield {
-      combineRegisterBits(r0.shift, r1.shift, r2.shift)
+      combineRegisterBits(r0.shift(), r1.shift(), r2.shift())
     }
 
     require(outs == "0000101101010100110001101".split("").map(_.toInt).toList, {
@@ -149,21 +149,21 @@ object Problem1 extends App {
     val r2 = new LSFR(6420, R3.taps, R3.size)
 
     val outs = for (_ <- 0 until 25) yield {
-      combineRegisterBits(r0.shift, r1.shift, r2.shift)
+      combineRegisterBits(r0.shift(), r1.shift(), r2.shift())
     }
 
     println(s"Challenge Vector output: ${outs.mkString("")}")
   }
 
   /**
-    * Source of bitwise operators: http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c
+    * Source of bitwise operators is [1]
     *
     * @param state initial state of the LSFR
     * @param taps  which bits to tap
     * @param size  number of bits in this LSFR
     */
   class LSFR(var state: Int, val taps: Seq[Int], val size: Int) {
-    def shift: Int = {
+    def shift(): Int = {
       val lastBit = state & 1
 
       val bits = for (x <- taps) yield (state >> x) & 1
@@ -184,3 +184,6 @@ object Problem1 extends App {
     }
   }
 }
+/**
+  * [1] Ruten, J. (2016). How do you set, clear and toggle a single bit in C/C++?. [online] Stackoverflow.com. Available at: http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c [Accessed 17 Nov. 2016].
+  */
